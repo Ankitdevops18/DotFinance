@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.core.config import settings
-from app.api import auth, reports, tenants, health
+from src.app.core.config import settings
+from src.app.api import auth, reports, tenants, health
 
 app = FastAPI(title="TallyAI API", version="1.0")
 

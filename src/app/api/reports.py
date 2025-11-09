@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.tally_bridge.client import send_tally_request
+from src.app.tally_bridge.client import send_tally_request
 
 router = APIRouter(prefix="/companies/{company_id}/reports", tags=["reports"])
 
@@ -9,13 +9,75 @@ def get_payables(company_id: int):
 
 @router.get("/receivables")
 async def get_receivables(company_id: int):
-    payload = {
-        "Request": {
-            "Type": "Receivables",
-            "Params": {"FromDate": "2025-01-01", "ToDate": "2025-01-31"}
-        }
-    }
-    result = await send_tally_request(payload)
+    # XML payload for Bills Receivable
+    xml_payload = """
+    <ENVELOPE>
+        <HEADER>
+            <TALLYREQUEST>Export Data</TALLYREQUEST>
+        </HEADER>
+        <BODY>
+            <EXPORTDATA>
+                <REQUESTDESC>
+                    <REPORTNAME>Bills Receivable</REPORTNAME>
+                    <STATICVARIABLES>
+                        <SVFROMDATE>20250401</SVFROMDATE>
+                        <SVTODATE>20250430</SVTODATE>
+                    </STATICVARIABLES>
+                </REQUESTDESC>
+            </EXPORTDATA>
+        </BODY>
+    </ENVELOPE>
+    """
+    result = await send_tally_request(xml_payload)
+    return result
+
+@router.get("/ledgers")
+async def get_ledgers(company_id: int):
+    # XML payload for Ledger report (correct report name)
+    xml_payload = """
+    <ENVELOPE>
+        <HEADER>
+            <TALLYREQUEST>Export Data</TALLYREQUEST>
+        </HEADER>
+        <BODY>
+            <EXPORTDATA>
+                <REQUESTDESC>
+                    <REPORTNAME>Ledger</REPORTNAME>
+                </REQUESTDESC>
+            </EXPORTDATA>
+        </BODY>
+    </ENVELOPE>
+    """
+    result = await send_tally_request(xml_payload)
+    return result
+
+@router.get("/company-balance")
+async def get_company_balance(company_id: int):
+    # Use company name and id for FinanceBox
+    company_name = "FinanceBox"
+    company_id_str = "100000"
+    # XML payload for Balance Sheet report for FinanceBox with export format
+    xml_payload = f"""
+    <ENVELOPE>
+        <HEADER>
+            <TALLYREQUEST>Export Data</TALLYREQUEST>
+        </HEADER>
+        <BODY>
+            <EXPORTDATA>
+                <REQUESTDESC>
+                    <REPORTNAME>Balance Sheet</REPORTNAME>
+                    <EXPORTFORMAT>XML</EXPORTFORMAT>
+                    <STATICVARIABLES>
+                        <SVFROMDATE>20250401</SVFROMDATE>
+                        <SVTODATE>20250430</SVTODATE>
+                        <SVCURRENTCOMPANY>{company_name}</SVCURRENTCOMPANY>
+                    </STATICVARIABLES>
+                </REQUESTDESC>
+            </EXPORTDATA>
+        </BODY>
+    </ENVELOPE>
+    """
+    result = await send_tally_request(xml_payload)
     return result
 
 @router.get("/{report_id}/download")
