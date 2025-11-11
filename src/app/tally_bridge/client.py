@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 
 async def send_tally_request(xml_payload: str):
     url = f"http://{settings.TALLY_HOST}:{settings.TALLY_PORT}"  # e.g., http://windows-server-ip:9000
-    headers = {"Content-Type": "application/xml"}
+    headers = {"Content-Type": "text/xml"}
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.post(url, content=xml_payload, headers=headers)

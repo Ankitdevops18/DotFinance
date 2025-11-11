@@ -33,21 +33,24 @@ async def get_receivables(company_id: int):
 
 @router.get("/ledgers")
 async def get_ledgers(company_id: int):
-    # XML payload for Ledger report (correct report name)
+    # XML payload for List of Ledgers (matches curl --data-binary payload)
     xml_payload = """
-    <ENVELOPE>
-        <HEADER>
-            <TALLYREQUEST>Export Data</TALLYREQUEST>
-        </HEADER>
-        <BODY>
-            <EXPORTDATA>
-                <REQUESTDESC>
-                    <REPORTNAME>Ledger</REPORTNAME>
-                </REQUESTDESC>
-            </EXPORTDATA>
-        </BODY>
-    </ENVELOPE>
-    """
+            <ENVELOPE>
+                <HEADER>
+                        <VERSION>1</VERSION>
+                        <TALLYREQUEST>EXPORT</TALLYREQUEST>
+                        <TYPE>COLLECTION</TYPE>
+                        <ID>List of Ledgers</ID>
+                </HEADER>
+                <BODY>
+                <DESC>
+                        <STATICVARIABLES>
+                                <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+                        </STATICVARIABLES>
+                </DESC>
+                </BODY>
+            </ENVELOPE>
+            """
     result = await send_tally_request(xml_payload)
     return result
 
